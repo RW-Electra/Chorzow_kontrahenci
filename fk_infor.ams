@@ -1,0 +1,1161 @@
+//Data aktualizacji 10.11.2023//
+#opis "Dane z programu Faktura, format FK 3.0", "*.TXT (Pliki tekstowe)"  //
+#format "AK"  
+#separator_01  "." 
+#Disable  "2"  //poziom ostrze¬e½ 1 (m.in. bez ostrze¬enia "Pole nie znalezione")
+#POWIELONE_NAZWY  "0"  //0-zapisuje bez pytania; 1-pyta czy zapisaŠ; 2-nie zapisuje
+#tbl "ˆ³ãÑ¢óäñ£«Ÿ©ê˜œ¾¿Ñ¬£³"
+#Data "dd.mm.rrrr"
+
+section("!", "dokument")
+{
+@KURS	= ""
+@WZ_wn  = ""
+@WZ_wn  = ""
+@FV_bru = ""
+@FV_net = ""
+@FV_vat = ""
+@sp		= ""
+
+@zap_poz = ""
+@zap_row = ""
+
+@poz_wn = ""
+@poz_MA = ""
+
+@row_wn = ""
+@row_MA = ""
+
+@pozycja = 0
+@ue = ""
+@opisy = ""
+@tran = ""
+$znacznik = 73
+@rejestr = "x"
+@kurs = "x"
+@typRoz = ""
+
+
+	$ObslugujJak 	= rex([InvoiceNumber],"^{:c#}", @rex1)  //[DocumentFunctionCode]
+	$klucz		= rex([InvoiceNumber],"^{:c#}", @rex1) // [DocumentFunctionCode]
+
+	info("Dokument: ", [InvoiceNumber],"   >",[InvoiceDate],"<  >",[InvoiceCurrency],"< klucz:>", $klucz)
+
+	$nazwa		= [InvoiceNumber]
+	$DataDok	= date([InvoiceDate])   //  rex([InvoiceDate],"{??}.{??}.{????}", CAT(@rex3,"-",@rex2,"-",@rex1)) 
+	$DataOper	= date([SalesDate])   //rex([InvoiceDate],"{??}.{??}.{????}", CAT(@rex3,"-",@rex2,"-",@rex1))
+	$datasprz	= date([SalesDate])     //rex([InvoiceDate],"{??}.{??}.{????}", CAT(@rex3,"-",@rex2,"-",@rex1))
+	$Datawpl	= date([InvoiceDate])
+	$Kwota		= money([Brutto])
+	
+
+	MakeSec("Kontrahent")
+		{
+// $autoinsert = 1
+			$id			= [BuyerID]
+
+// ta linijka by³a 
+
+
+//			$klucz		= [BuyerCode]
+
+
+// teraz jest ta
+			$klucz		= [BuyerID]
+
+
+
+
+
+			$NIP		= [BuyerTaxID]
+			$nazwa		= TRANSLATE([BuyerName],def("tbl") ) //[KliPNazwa]
+			$skrot 		= REX(TRANSLATE([BuyerCode],def("tbl") ), "??????????????????????????")
+			if ( not( $skrot ) )	
+			  $skrot 	= TRANSLATE([BuyerName],def("tbl") )//[KliPNazwa]
+
+			$miejscowosc	= TRANSLATE([BuyerCity],def("tbl") ) //[KliPMiasto]
+			$ulica		= TRANSLATE([BuyerStreet],def("tbl") ) // [KliPUlica]
+			$kod       	= TRANSLATE([BuyerPostalCode],def("tbl") ) //[KliPKod]
+			$krajKod 	= [BuyerCountryID]
+
+
+			if( !equal([BuyerCountryID],"PL") )
+			$NIP		= cat([BuyerCountryID],[BuyerTaxID])
+		}	
+	switch(  [BuyerGroup] )
+	{
+	  case "0"
+			switch( $klucz )
+			{
+				case "WDK"
+					@FV_bru = "203-2-1-K"
+					@FV_vat = "221-1"
+					@tran = 1		
+					@@rejestr = "x"
+					@@sp = "x"
+					@@ue = "1"
+					break
+				case "WD"
+					@FV_bru = "203-2-1-K"
+					@FV_vat = "221-1"
+					@tran = 1		
+					@@rejestr = "x"
+					@@sp = "x"
+					@@ue = "1"
+					break
+				case "FVSK"
+					@FV_bru = "201-2-1-K"
+					@FV_vat = "221-3"		
+					@@kurs = ""
+					@@sp = "x"
+					@@typRoz = "x"
+					break
+				case "FVS"
+					@FV_bru = "201-2-1-K"
+					@FV_vat = "221-1"		
+					@@kurs = ""
+					@@sp = "x"
+					@@typRoz = "x"
+					break
+				case "FVWK"
+					@FV_bru = "203-2-1-K"
+					@FV_vat = "221-3"		
+					@@typRoz = "x"
+					@@sp = "x"
+					break
+				case "FVW"
+					@FV_bru = "203-2-1-K"
+					@FV_vat = "221-1"		
+					@@typRoz = "x"
+					@@sp = "x"
+					break
+				case "DEXK"
+					@FV_bru = "203-2-1-K"
+					@@sp = "x"
+					break		
+				case "DEX"
+					@FV_bru = "203-2-1-K"
+					@tran = 1		
+					@@sp = "x"
+				case "WDAK"
+					@@sp = "x"
+				case "WDA"
+					@@sp = "x"
+				break
+				CASE ELSE
+					Warning("NIE rozpoznany typ dokumentu: >", $klucz,"<")
+			}
+	  break
+	  case "1"
+			switch( $klucz )
+			{
+				case "WDK"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-1"
+					@tran = 1		
+					@@rejestr = "x"
+					@@sp = "x"
+					@@ue = "1"
+					break
+				case "WD"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-1"
+					@tran = 1		
+					@@rejestr = "x"
+					@@sp = "x"
+					@@ue = "1"
+					break
+				case "FVSK"
+					@FV_bru = "201-1-1-K"
+					@FV_vat = "221-3"		
+					@@kurs = ""
+					@@sp = "x"
+					@@typRoz = "x"
+					break
+				case "FVS"
+					@FV_bru = "201-1-1-K"
+					@FV_vat = "221-1"		
+					@@kurs = ""
+					@@sp = "x"
+					@@typRoz = "x"
+					break
+				case "FVWK"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-3"		
+					@@typRoz = "x"
+					@@sp = "x"
+					break
+				case "FVW"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-1"		
+					@@typRoz = "x"
+					@@sp = "x"
+					break
+				case "DEXK"
+					@FV_bru = "203-1-1-K"
+					@@sp = "x"
+					break		
+				case "DEX"
+					@FV_bru = "203-1-1-K"
+					@tran = 1		
+					@@sp = "x"
+				case "WDAK"
+					@@sp = "x"
+				case "WDA"
+					@@sp = "x"
+				break
+				CASE ELSE
+					Warning("NIE rozpoznany typ dokumentu: >", $klucz,"<")
+			}
+	  case "2"
+			switch( $klucz )
+			{
+				case "WDK"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-1"
+					@tran = 1		
+					@@rejestr = "x"
+					@@sp = "x"
+					@@ue = "1"
+					break
+				case "WD"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-1"
+					@tran = 1		
+					@@rejestr = "x"
+					@@sp = "x"
+					@@ue = "1"
+					break
+				case "FVSK"
+					@FV_bru = "201-1-1-K"
+					@FV_vat = "221-3"		
+					@@kurs = ""
+					@@sp = "x"
+					@@typRoz = "x"
+					break
+				case "FVS"
+					@FV_bru = "201-1-1-K"
+					@FV_vat = "221-1"		
+					@@kurs = ""
+					@@sp = "x"
+					@@typRoz = "x"
+					break
+				case "FVWK"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-3"		
+					@@typRoz = "x"
+					@@sp = "x"
+					break
+				case "FVW"
+					@FV_bru = "203-1-1-K"
+					@FV_vat = "221-1"		
+					@@typRoz = "x"
+					@@sp = "x"
+					break
+				case "DEXK"
+					@FV_bru = "203-1-1-K"
+					@@sp = "x"
+					break		
+				case "DEX"
+					@FV_bru = "203-1-1-K"
+					@tran = 1		
+					@@sp = "x"
+				case "WDAK"
+					@@sp = "x"
+				case "WDA"
+					@@sp = "x"
+				break
+				CASE ELSE
+					Warning("NIE rozpoznany typ dokumentu: >", $klucz,"<")
+			}
+	break
+	}
+@@kkk = ""
+
+	switch(  [BuyerID] )
+	{
+		case "00000002"
+		case "00000114"
+		case "00000256"
+			@@kkk = "2"
+		break
+		case "00000342"
+			@@kkk = "6"
+		break
+		case "00000005"
+			@@kkk = "294"
+		break
+		case "00000026"
+			@@kkk = "407"
+
+		break
+		case "00000081"
+		case "00000356"
+		case "00000213"
+			@@kkk = "478"
+		break
+		
+		case "00000228"
+			@@kkk = "4545"
+		break
+
+		case "00000099"
+		case "00000186"
+			@@kkk = "838"
+		break
+		case "00000197"
+			@@kkk = "1414"
+		break
+		case "00000229"
+			@@kkk = "1597"
+		break
+		case "00000165"
+			@@kkk = "1250"
+		break
+		case "00000232"
+			@@kkk = "1686"
+		break
+		case "00000209"
+		case "00000335"
+		case "00000630"
+		case "00000262"
+		case "00000543"
+		case "00000664"
+			@@kkk = "1489"
+		break
+		case "00000216"
+		case "00000506"
+			@@kkk = "2330"
+		break
+		case "00000286"
+			@@kkk = "2019"
+		break
+		case "00000159"
+			@@kkk = "1251"
+		break
+		case "00000220"
+			@@kkk = "1266"
+		break
+		case "00000117"
+			@@kkk = "969"
+		break
+		case "00000426"
+			@@kkk = "5350"
+		break
+		case "00000441"
+			@@kkk = "3219"
+		break
+		case "00000448"
+			@@kkk = "1687"
+		break
+		case "00000329"
+			@@kkk = "2383"
+		break
+		case "00000359"
+			@@kkk = "2646"
+		break
+		case "00000253"
+			@@kkk = "1872"
+		break
+		case "00000009"
+			@@kkk = "1232"
+		break
+		case "00000207"
+			@@kkk = "1468"
+		break
+		case "00000061"	
+		case "00000349"
+			@@kkk = "660"
+		break
+		case "00000034"
+		case "00000341"
+			@@kkk = "477"
+		break
+		case "00000353"
+			@@kkk = "2566"
+		break
+		case "00000386"
+			@@kkk = "2953"
+		break
+		case "00000063"
+			@@kkk = "668"
+		break
+		case "00000287"
+			@@kkk = "1992"
+		break
+		case "00000408"
+			@@kkk = "2980"
+		break
+		case "00000454"
+			@@kkk = "3382"
+		break
+		case "00000403"
+			@@kkk = "1686"
+		break
+		case "00000255"
+			@@kkk = "1761"
+		break
+		case "00000149"
+			@@kkk = "4907"
+		break
+		case "00000428"
+			@@kkk = "3151"
+		break
+		case "00000244"
+			@@kkk = "1699"
+		break
+		
+		case "00000406"
+			@@kkk = "2938"
+		break
+		case "00000636"
+			@@kkk = "2938"
+		break
+		case "00000234"
+			@@kkk = "1942"
+		break
+		case "00000390"
+			@@kkk = "2875"
+		break
+		case "00000171"
+			@@kkk = "1264"
+		break
+		case "00000238"
+			@@kkk = "1995"
+		break
+		case "00000135"
+			@@kkk = "1119"
+		break
+		case "00000391"
+			@@kkk = "2876"
+		break
+		case "00000451"
+			@@kkk = "3318"
+		break
+		case "00000401"
+			@@kkk = "2941"
+		break
+		case "00000269"
+			@@kkk = "1885"
+		break
+		case "00000420"
+			@@kkk = "3228"
+		break
+		case "00000409"
+			@@kkk = "3046"
+		break
+		case "00000124"
+			@@kkk = "1015"
+		break
+		case "00000459"
+			@@kkk = "3383"
+		break
+		case "00000415"
+			@@kkk = "3114"
+		break
+		case "00000148"
+			@@kkk = "1243"
+		break
+		case "00000389"
+			@@kkk = "2836"
+		break
+		case "00000202"
+			@@kkk = "1436"
+		break
+		case "00000276"
+			@@kkk = "1891"
+		break
+		case "00000453"
+			@@kkk = "3186"
+		break
+		case "00000307"
+			@@kkk = "2175"
+		break
+		case "00000387"
+			@@kkk = "1942"
+		break
+		case "00000371"
+			@@kkk = "1617"
+		break
+		case "00000383"
+		case "00000468"
+			@@kkk = "3948"
+		break
+		case "00000384"
+			@@kkk = "5411"
+		break
+		case "00000461"
+			@@kkk = "3410"
+		break
+		case "00000449"
+			@@kkk = "3309"
+		break
+		case "00000181"
+			@@kkk = "4783"
+		break
+		case "00000338"
+			@@kkk = "2408"
+		break
+		case "00000129"
+			@@kkk = "1075"
+		break
+		case "00000204"
+			@@kkk = "1466"
+		break
+		case "00000107"
+			@@kkk = "899"
+		break
+		case "00000316"
+			@@kkk = "2435"
+		break
+		case "00000266"
+			@@kkk = "1802"
+		break
+		case "00000382"
+		case "00000547"
+		case "00000392"
+		case "00000597"
+		case "00000566"
+			@@kkk = "1168"
+		break
+		case "00000366"
+			@@kkk = "2691"
+		break
+		case "00000261"
+			@@kkk = "1793"
+		break
+		case "00000418"
+			@@kkk = "3110"
+		break
+		case "00000239"
+			@@kkk = "1661"
+		break
+		case "00000268"
+			@@kkk = "1232"
+		break
+		case "00000212"
+			@@kkk = "1505"
+		break
+		case "00000330"
+			@@kkk = "2454"
+		break
+		case "00000343"
+			@@kkk = "3546"
+		break	
+		
+		case "00000444"
+			@@kkk = "5212"
+		break
+
+		case "00000450"
+			@@kkk = "3142"
+		break
+		case "00000102"
+			@@kkk = "848"
+		break
+		case "00000388"
+			@@kkk = "838"
+		break
+		case "00000301"
+			@@kkk = "2117"
+		break
+		case "00000146"
+			@@kkk = "1917"
+		break
+		case "00000433"
+			@@kkk = "3169"
+		break
+		case "00000219"
+			@@kkk = "1534"
+		break
+		case "00000191"
+			@@kkk = "1389"
+		break
+		case "00000303"
+			@@kkk = "2120"
+		break
+		case "00000372"
+			@@kkk = "4871"
+		break
+		case "00000379"
+			@@kkk = "2768"
+		break
+		case "00000240"
+			@@kkk = "1725"
+		break
+		case "00000442"
+			@@kkk = "3559"
+		break
+		case "00000211"
+			@@kkk = "1503"
+		break
+		case "00000282"
+			@@kkk = "1964"
+		break
+		case "00000394"
+			@@kkk = "2880"
+		break
+		case "00000414"
+			@@kkk = "3017"
+		break
+		case "00000405"
+			@@kkk = "2942"
+		break
+		case "00000402"
+			@@kkk = "1938"
+		break
+		
+		case "00000421"
+			@@kkk = "3054"
+		break
+		case "00000494"
+			@@kkk = "3698"
+		break
+		case "00000514"
+			@@kkk = "3987"
+		break
+		case "00000467"
+			@@kkk = "3448"
+		break
+		case "00000452"
+			@@kkk = "3334"
+		break
+		case "00000510"
+		case "00000517"
+			@@kkk = "3866"
+		break
+		case "00000516"
+			@@kkk = "3920"
+		break
+		case "00000528"
+			@@kkk = "4028"
+		break
+		case "00000530"
+			@@kkk = "4062"
+		break
+		case "00000542"
+			@@kkk = "4148"
+		break
+		case "00000537"
+			@@kkk = "4131"
+		break
+		case "00000538"
+			@@kkk = "4145"
+		break
+		
+		case "00000531"
+			@@kkk = "4072"
+		break
+		case "00000541"
+			@@kkk = "4144"
+		break
+		case "00000551"
+			@@kkk = "4583"
+		break
+		case "00000559"
+			@@kkk = "4345"
+		break
+		case "00000560"
+			@@kkk = "4309"
+		break
+		case "00000564"
+			@@kkk = "4582"
+		break		
+		case "00000584"
+			@@kkk = "3891"
+		break
+		case "00000587"
+			@@kkk = "4550"
+		break
+		case "00000592"
+			@@kkk = "4711"
+		break
+		case "00000595"
+			@@kkk = "4640"
+		break
+		
+		case "00000598"
+			@@kkk = "4702"
+		break
+		
+		case "00000460"
+		case "00000568"
+			@@kkk = "2907"
+		break
+		
+		case "00000443"
+			@@kkk = "3261"
+		break
+		
+		case "00000615"
+			@@kkk = "5409"
+		break	
+		
+		case "00000616"
+			@@kkk = "4935"
+		break
+		
+		case "00000628"
+			@@kkk = "5283"
+		break		
+		
+		case "00000631"
+			@@kkk = "5120"
+		break
+		
+		case "00000643"
+			@@kkk = "5319"
+		break
+		
+		case "00000640"
+			@@kkk = "5253"
+		break		
+		
+		case "00000644"
+			@@kkk = "5273"
+		break
+
+
+		case "00000800"
+			@@kkk = "9001"
+		break
+
+		case "00000300"
+			@@kkk = "2118"
+		break
+
+		case "00000507"
+			@@kkk = "3922"
+		break
+
+		case "00000535"
+			@@kkk = "4100"
+		break
+
+		case "00000611"
+			@@kkk = "4896"
+		break
+
+		case "00000626"
+			@@kkk = "5056"
+		break
+
+		case "00000629"
+			@@kkk = "5117"
+		break
+
+		case "00000610"
+			@@kkk = "5410"
+		break
+
+		case "00000337"
+			@@kkk = "3477"
+		break
+
+		case "00000416"
+			@@kkk = "3115"
+		break
+
+		case "00000652"
+			@@kkk = "1630"
+		break
+
+		case "00000427"
+			@@kkk = "3125"
+		break
+
+		case "00000432"
+			@@kkk = "3162"
+		break
+
+		case "00000596"
+			@@kkk = "4443"
+		break
+
+		case "00000588"
+			@@kkk = "4598"
+		break
+
+		case "00000614"
+			@@kkk = "4904"
+		break
+
+		case "00000623"
+			@@kkk = "5013"
+		break
+
+		case "00000632"
+			@@kkk = "5123"
+		break
+
+		case "00000515"
+			@@kkk = "1830"
+		break
+
+		case "00000348"
+			@@kkk = "2471"
+		break
+
+		case "00000487"
+			@@kkk = "3588"
+		break
+
+		case "00000619"
+			@@kkk = "4978"
+		break
+
+		case "00000648"
+			@@kkk = "5323"
+		break
+
+		case "00000654"
+			@@kkk = "5513"
+		break
+
+		case "00000653"
+			@@kkk = "5525"
+		break
+
+		case "00000377"
+			@@kkk = "2434"
+		break
+
+		case "00000397"
+			@@kkk = "2883"
+		break
+
+		case "00000562"
+			@@kkk = "4327"
+		break
+
+		case "00000565"
+			@@kkk = "4389"
+		break
+
+		case "00000635"
+			@@kkk = "5145"
+		break
+
+		case "00000656"
+			@@kkk = "5556"
+		break
+
+		case "00000657"
+			@@kkk = "5575"
+		break
+
+		case "00000659"
+			@@kkk = "5593"
+		break
+
+		case "00000660"
+			@@kkk = "5602"
+		break
+
+		case "00000583"
+			@@kkk = "5628"
+		break
+
+		case "00000268"
+			@@kkk = "5391"
+		break
+
+		case "00000646"
+			@@kkk = "5639"
+		break
+
+		case "00000305"
+			@@kkk = "2123"
+		break
+
+		case "00000638"
+			@@kkk = "5210"
+		break
+		
+		case "00000667"
+			@@kkk = "5781"
+		break
+
+		case "00000006"
+			@@kkk = "14"
+		break
+
+		case "00000393"
+			@@kkk = "2881"
+		break
+
+		case "00000668"
+			@@kkk = "5833"
+		break
+
+		case "00000671"
+			@@kkk = "5874"
+		break
+
+		case "00000502"
+			@@kkk = "3773"
+		break
+
+
+
+	
+	case else
+		@@kkk = "99"
+
+	}
+
+
+//if (!equal( [InvoiceCurrency],"PLN") )
+if ( @@kurs )
+	{
+	 $waluta	= [InvoiceCurrency]
+	 $kurs		= money([CurrencyExchange])
+	 @KURS		= money([CurrencyExchange]) 
+	 $typkursu	= "2"
+	}
+
+//-- |  Sprzeda¿  | -----------------------------------------
+
+if( @sp )
+	{
+	$tresc		= cat("<I>  ","Sprzeda¿ ",[BuyerName])	
+
+		IF ([Description1])
+			$tresc		= cat("<I>  ",[Description1] ," ",[BuyerName])	
+
+
+		MakeSec("zapis")
+		{
+			$strona			= 0
+			$kwota			= [Brutto]
+			$Konto			= @@FV_bru
+			$pozycja 		= @@pozycja 
+
+		IF ([Description2])
+			$opis	= [Description2]	
+
+
+			$idDlaRozliczen = 1
+			
+					if ( @@kurs )
+					{
+					   $wkwota=  [BruttoCUR] //div6( $kwota, @@kurs ) 
+					   $typkursu	= "2"
+					   $kurs        = @@kurs
+					   $waluta	= $$waluta
+
+					}
+
+
+		}
+
+	Section("", "zapis", "REPEAT")	//REPEAT: analizujemy wszystkie podsekcje
+	{
+			$strona		=    1 
+
+		IF ([Description2])
+			$opis	= [Description2]	
+
+
+
+
+			$kwota		= [Amount]
+			$Konto		= [Account]
+
+	@@kontoX = rex( [Account],"^{*}/-K/-{*}$" )
+
+
+	if ( @@kontoX )
+		$konto = cat( @rex1,"-",@@kkk,"-",@rex2 )
+
+
+			$pozycja 	= @@pozycja 
+
+				if ( @@kurs )
+					{
+  					   $wkwota= [AmountCUR]
+					   $typkursu	= "2"
+					   $kurs        = @@kurs
+					   $waluta	= $$waluta
+
+					}
+			@@GTU =  rex( [Account],"^{*}/-{*}/-{*}/-*$" )
+			
+			if(equal( @rex1,"701"))
+			{
+			@@GTU = ""
+				
+				if (equal( @rex3,"1"))
+				{
+					@@GTU = "GTU_07"
+				}
+				
+			}
+			else
+			{
+				@@GTU = ""
+			}
+	}
+		
+		if (!equal( [VatTotal],"0.00") )
+		MakeSec("zapis")
+		{
+			$strona		= 1  
+
+		IF ([Description2])
+			$opis	= [Description2]	
+
+			$kwota		= [VatTotal]
+			$Konto		= @@FV_vat
+			$pozycja 	= @@pozycja 
+					if ( @@kurs )
+					{
+					   $wkwota= [VatTotalCUR]
+			  		   $typkursu	= "2"
+					   $kurs        = @@kurs
+					   $waluta		= $$waluta
+					}
+		}
+	}
+else
+{
+//-- |  ZAKUP  | -----------------------------------------
+	$tresc		= cat("<I>  ","Zakup ",[BuyerName])	
+
+		IF ([Description1])
+			$tresc	= cat("<I>  ",[Description1] ," ",[BuyerName])	
+
+
+		MakeSec("zapis")
+		{
+			$strona		= 1
+
+		IF ([Description2])
+			$opis	= [Description2]	
+
+			$kwota		= [Brutto]
+			$Konto		= @@FV_bru
+			$pozycja 	= @@pozycja 
+				MakeSec("Transakcja")
+					{
+						$termin = date([InvoicePaymentDueDate])
+						$ustawowe=1 
+						if ( @@kurs )
+					   	  $wkwota=  [BruttoCUR] //div6( $kwota, @@kurs ) 
+					}
+
+					if ( @@kurs )
+					{
+					   $wkwota=  [BruttoCUR] //div6( $kwota, @@kurs ) 
+					   $typkursu	= "2"
+					   $kurs        = @@kurs
+					   $waluta	= $$waluta
+
+					}
+
+
+		}
+
+	Section("", "zapis", "REPEAT")	//REPEAT: analizujemy wszystkie podsekcje
+		{
+			$strona		=    0 
+			$kwota		= [Amount]
+
+		IF ([Description2])
+			$opis	= [Description2]	
+
+			$Konto		= [Account]
+			$pozycja 	= @@pozycja 
+				if ( @@kurs )
+					{
+  					   $wkwota=  [AmountCUR]  //div6( $kwota, @@kurs ) 
+					   $typkursu	= "2"
+					   $kurs        = @@kurs
+					   $waluta	= $$waluta
+					}
+		}
+		
+		if (!equal( [VatTotal],"0.00") )
+		MakeSec("zapis")
+		{
+			$strona		= 0
+			$kwota		= [VatTotal]
+			$Konto		= @@FV_vat
+			$pozycja 	= @@pozycja 
+					if ( @@kurs )
+					{
+					   $wkwota=  [VatTotalCUR]  //div6( $kwota, @@kurs ) 
+			  		   $typkursu	= "2"
+					   $kurs        = @@kurs
+					   $waluta	= $$waluta
+					}
+		}
+
+}
+
+				MakeSec("Transakcja")
+					{
+						$termin = date([InvoicePaymentDueDate])
+						$ustawowe=1 
+						$idDlaRozliczen = 1
+
+						if( @@typRoz )
+							$idDlaRozliczen = -1
+						
+						
+						if ( @@kurs )
+							$wkwota=  [BruttoCUR] //div6( $kwota, @@kurs ) 
+							$waluta	= $$waluta
+					}
+
+
+if ( @rejestr )
+{
+		if ( [Netto23] ) 
+		MakeSec("rejestr")
+		{
+			$Klucz		= CAT($$klucz, ",", "ZW", ",", "3", ",", [stawka2], ",", [stawka3], ",", [stawka4])
+			$ABC		= 1	//A
+			$okres		= date([InvoiceDate]) //rex([InvoiceDate],"{??}.{??}.{????}", CAT(@rex3,"-",@rex2,"-",@rex1))
+
+			$netto		= [Netto23]
+			$vat		= [Vat23]
+			$stawka		= "23"
+			$atrJpkV7 	= @@GTU
+		}
+		
+		if ( [Netto7] ) 
+		MakeSec("rejestr")
+		{
+			$Klucz		= CAT($$klucz, ",", "ZW", ",", "3", ",", [stawka2], ",", [stawka3], ",", [stawka4])
+			$ABC		= 1	//A
+			$okres		= date([InvoiceDate]) //rex([InvoiceDate],"{??}.{??}.{????}", CAT(@rex3,"-",@rex2,"-",@rex1))
+
+			$netto		= [netto7]
+			$vat		= [Vat7]
+			$stawka		= "7"
+			$atrJpkV7 	= @@GTU
+		}
+	
+		MakeSec("rejestr")
+		{
+			$Klucz		= CAT($$klucz, ",", "ZW", ",", "3", ",", [stawka2], ",", [stawka3], ",", [stawka4])
+			$ABC		= 1	//A
+			$okres		= date([InvoiceDate]) //rex([InvoiceDate],"{??}.{??}.{????}", CAT(@rex3,"-",@rex2,"-",@rex1))
+		
+			$netto		= [Netto0]
+			$vat		= 0
+			$stawka		= 0	
+			$ue 		= @@ue	   
+			$atrJpkV7 	= @@GTU
+		}
+	}
+		
+}
+
+
+section("","")
+{
+	Warning("Nierozpoznana sekcja: ", Name())
+}
+

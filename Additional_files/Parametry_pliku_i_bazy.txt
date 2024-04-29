@@ -1,0 +1,5 @@
+Œcie¿ka--C:\Users\Sebastian\Desktop\blender
+Nazwa pliku--fk_infor.ams
+Interwa³--1
+Nazwa biblioteki--IBPROJ07T
+Nazwa tabeli--KONTRAHENCI
