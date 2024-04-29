@@ -1,0 +1,1 @@
+# Chorzow_kontrahenci
